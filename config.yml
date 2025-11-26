@@ -1,0 +1,34 @@
+# admin/config.yml
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: "static/images/uploads"
+public_folder: "/images/uploads"
+
+i18n:
+  structure: multiple_files
+  locales: [en, zh]
+  default_locale: en
+
+collections:
+  - name: "posts"
+    label: "Posts"
+    folder: "content/posts"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Publish Date", name: "date", widget: "datetime", format: "YYYY-MM-DDTHH:mm:ssZ" }
+      - { label: "Category", name: "category", widget: "string" }
+      - label: "Title"
+        name: "title"
+        widget: "string"
+        i18n: true
+      - label: "Excerpt"
+        name: "excerpt"
+        widget: "text"
+        i18n: true
+      - label: "Body"
+        name: "body"
+        widget: "markdown"
+        i18n: true

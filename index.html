@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JDES</title>
+
+  <!-- 🔖 Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 36'%3E%3Cpath d='M10 30 Q30 15, 50 30 T90 30 T130 30 T150 30' stroke='%23f57c00' stroke-width='1.2' fill='none' opacity='0.6'/%3E%3Ctext x='80' y='26' font-family='Orbitron, sans-serif' font-weight='700' font-size='60' fill='%23f57c00' text-anchor='middle' letter-spacing='2'%3EJDES%3C/text%3E%3C/svg%3E">
+
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+  <script src="https://dashscope.alicdn.com/web-sdk/latest/web-sdk.js"></script>
+
+  <style>
+    :root {
+      --bg: #121212;
+      --fg: #f0f0f0;
+      --accent: #f57c00;
+      --card-bg: #1e1e1e;
+      --border: #333;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.7;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Starfield background */
+    #starfield {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .motto-sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100vh;
+      width: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      font-size: 14px;
+      color: #555;
+      z-index: 10;
+    }
+
+    .motto-text {
+      letter-spacing: 4px;
+      text-align: center;
+      padding: 10px 0;
+      border-right: 1px solid var(--border);
+      transition: color 0.3s;
+    }
+
+    .motto-text:hover {
+      color: var(--accent);
+    }
+
+    .stock-sidebar {
+      position: fixed;
+      right: 0;
+      top: 0;
+      height: 100vh;
+      width: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 20px;
+      z-index: 10;
+    }
+
+    .stock-container {
+      width: 260px;
+      transform: rotate(90deg) translateX(-110px);
+      transform-origin: top left;
+    }
+
+    .stock-title {
+      font-size: 12px;
+      color: #777;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    #stock-display {
+      background: var(--card-bg);
+      color: var(--fg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      padding: 0 10px;
+    }
+
+    .main-wrapper {
+      margin-left: 40px;
+      margin-right: 40px;
+      padding-top: 20px;
+    }
+
+    header {
+      padding: 2rem 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo-text {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 2.2rem;
+      text-decoration: none;
+      background: linear-gradient(90deg, #fff, var(--accent));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: 2px;
+      display: block;
+      height: 48px;
+      line-height: 48px;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    nav a, #lang-toggle {
+      color: var(--fg);
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+
+    nav a:hover, #lang-toggle:hover {
+      color: var(--accent);
+    }
+
+    main {
+      max-width: 720px;
+      margin: 3rem auto;
+      padding: 0 5%;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .hero h1 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      background: linear-gradient(90deg, #fff, var(--accent));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: #aaa;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .posts {
+      display: flex;
+      flex-direction: column;
+      gap: 1.8rem;
+    }
+
+    .post-card {
+      background: var(--card-bg);
+      padding: 1.8rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      transition: transform 0.3s, border-color 0.3s;
+    }
+
+    .post-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-3px);
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem 5%;
+      color: #777;
+      font-size: 0.9rem;
+      border-top: 1px solid var(--border);
+      margin-top: 4rem;
+    }
+
+    .counter {
+      margin-top: 0.5rem;
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    /* 💬 Qwen AI Assistant */
+    #ai-assistant {
+      margin-top: 3rem;
+    }
+    #chat-container {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      height: 200px;
+      overflow-y: auto;
+      font-size: 0.95rem;
+    }
+    #user-input {
+      flex: 1;
+      padding: 10px;
+      background: #2a2a2a;
+      border: 1px solid var(--border);
+      color: var(--fg);
+      border-radius: 6px;
+    }
+    #ai-send-btn {
+      padding: 10px 16px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #ai-send-btn:hover {
+      background: #ff9800;
+    }
+    .ai-message {
+      padding: 8px 0;
+      border-bottom: 1px solid #333;
+    }
+    .ai-message:last-child {
+      border-bottom: none;
+    }
+    .ai-user-msg strong { color: #aaa; }
+    .ai-assistant-msg strong { color: var(--accent); }
+
+    /* Lotto Panel */
+    #lottery-panel {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      width: 280px;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .input-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    input[type="number"] {
+      width: 36px;
+      height: 36px;
+      text-align: center;
+      font-size: 16px;
+      border: 1px solid #555;
+      border-radius: 6px;
+      background: #2a2a2a;
+      color: white;
+      padding: 0;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    #lottery-panel button {
+      width: 100%;
+      padding: 8px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    #lottery-panel button:hover {
+      background: #ff9800;
+    }
+
+    #my-result {
+      margin-top: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 768px) {
+      .motto-sidebar, .stock-sidebar { display: none; }
+      .main-wrapper { margin-left: 0; margin-right: 0; padding-top: 10px; }
+      header { padding: 1.5rem 5%; }
+      .logo-text { font-size: 1.8rem; height: 40px; line-height: 40px; }
+      #lottery-panel {
+        bottom: 10px;
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        width: calc(100% - 40px);
+        max-width: 320px;
+      }
+      input[type="number"] {
+        width: 46px;
+        height: 46px;
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="starfield"></canvas>
+
+  <div class="motto-sidebar">
+    <div class="motto-text">Even in the face of gales, never give up</div>
+  </div>
+
+  <div class="stock-sidebar">
+    <div class="stock-container">
+      <div class="stock-title">HaiGe Comms (002465)</div>
+      <div id="stock-display">Loading...</div>
+    </div>
+  </div>
+
+  <div class="main-wrapper">
+    <header>
+      <a href="/" class="logo-text" aria-label="JDES Home">JDES</a>
+      <nav>
+        <a href="#posts">Posts</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+        <span id="lang-toggle" onclick="toggleLanguage()">ZH</span>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <h1>JDES</h1>
+        <p>Record thoughts · Share creations · Explore the edge of the digital world</p>
+      </section>
+
+      <!-- ✨ 动态文章区域 -->
+      <section id="posts" class="posts">
+        <div id="posts-loading">Loading posts...</div>
+      </section>
+
+      <section id="about" style="margin-top: 3rem;">
+        <h2>About JDES</h2>
+        <p>
+          Hi, I'm DL, a digital nomad, indie developer, and lifelong learner.<br>
+          I believe technology should serve humanity, and writing is an extension of thought.<br>
+          This is where I share insights, projects, and inspiration.
+        </p>
+      </section>
+
+      <!-- 💬 Qwen AI Assistant -->
+      <section id="ai-assistant">
+        <h2>Ask Qwen</h2>
+        <div id="chat-container"></div>
+        <div style="display: flex; gap: 8px; margin-top: 12px;">
+          <input type="text" id="user-input" placeholder="Ask something (e.g., What is JDES?)" />
+          <button id="ai-send-btn" onclick="askQwen()">Send</button>
+        </div>
+        <p style="font-size: 0.8rem; color: #777; margin-top: 8px;">Powered by Qwen via DashScope</p>
+      </section>
+
+      <section id="contact" style="margin-top: 2rem;">
+        <h2>Get in Touch</h2>
+        <p>Feel free to reach out via email or social media:</p>
+        <p style="margin-top: 0.5rem;">
+          📧 <a href="mailto:2296649254@qq.com" style="color: var(--accent); text-decoration: none;">2296649254@qq.com</a>
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" style="color: #999; font-size: 0.85rem;">
+          Beijing ICP Filing No. 12345678-1
+        </a>
+      </p>
+      <p class="counter">Running for <span id="busuanzi_value_site_uv"></span> days, visited <span id="busuanzi_value_site_pv"></span> times</p>
+      <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    </footer>
+  </div>
+
+  <!-- 🔮 Lotto Checker -->
+  <div id="lottery-panel">
+    <div style="font-weight: bold; color: var(--accent); margin-bottom: 8px;">Lotto Checker</div>
+    <div>Red Balls (6):</div>
+    <div class="input-group" id="red-inputs"></div>
+    <div style="margin-top: 8px;">Blue Ball (1):</div>
+    <div class="input-group">
+      <input type="number" id="blue-input" min="1" max="16" placeholder="">
+    </div>
+    <button onclick="checkLottery()">Check</button>
+    <div id="my-result">Enter draw numbers and click Check</div>
+  </div>
+
+  <!-- Starfield Animation -->
+  <script>
+    (function() {
+      const canvas = document.getElementById('starfield');
+      const ctx = canvas.getContext('2d');
+
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      const isMobile = window.innerWidth <= 768;
+      const starCount = isMobile ? 150 : 500;
+
+      class Star {
+        constructor() {
+          this.reset();
+          this.depth = Math.random();
+        }
+        reset() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.vx = (Math.random() - 0.5) * 0.2;
+          this.vy = Math.random() * 0.15 + 0.02;
+        }
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          if (this.y > canvas.height + 10) this.y = -10;
+          if (this.x > canvas.width + 10) this.x = -10;
+          if (this.x < -10) this.x = canvas.width + 10;
+        }
+        draw(time) {
+          const size = 0.3 + this.depth * 1.4;
+          const baseOpacity = 0.2 + this.depth * 0.8;
+          const twinkle = Math.sin(time * (0.8 + this.depth * 1.5)) * 0.25;
+          const opacity = Math.max(0, Math.min(1, baseOpacity + twinkle));
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+          ctx.fill();
+        }
+      }
+
+      const stars = Array.from({ length: starCount }, () => new Star());
+      let time = 0;
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        time += 0.016;
+        stars.forEach(star => {
+          star.update();
+          star.draw(time);
+        });
+        requestAnimationFrame(animate);
+      }
+      animate();
+    })();
+  </script>
+
+  <!-- Mock Stock Data -->
+  <script>
+    setTimeout(() => {
+      document.getElementById('stock-display').innerHTML = `
+        <div style="text-align: center;">
+          <div style="font-weight: 600; color: #f57c00;">12.45</div>
+          <div style="font-size: 12px; color: #aaa;">↑0.32 (2.64%)</div>
+        </div>
+      `;
+    }, 300);
+  </script>
+
+  <!-- Lotto Logic -->
+  <script>
+    const myTickets = [
+      [4, 10, 17, 19, 25, 31, 6],
+      [1, 2, 3, 4, 5, 6, 7],
+      [1, 6, 8, 9, 11, 24, 8],
+      [4, 5, 6, 11, 14, 15, 9],
+      [3, 8, 9, 12, 14, 15, 16]
+    ];
+
+    function checkPrize(drawnRed, drawnBlue, ticket) {
+      const redSet = new Set(drawnRed);
+      const ticketRed = ticket.slice(0, 6);
+      const ticketBlue = ticket[6];
+      const matchRed = ticketRed.filter(n => redSet.has(n)).length;
+      const matchBlue = ticketBlue === drawnBlue ? 1 : 0;
+
+      if (matchRed === 6 && matchBlue === 1) return { level: '1st Prize', prize: '≈¥5M+' };
+      if (matchRed === 6 && matchBlue === 0) return { level: '2nd Prize', prize: '≈¥200K+' };
+      if (matchRed === 5 && matchBlue === 1) return { level: '3rd Prize', prize: '¥3,000' };
+      if ((matchRed === 5 && matchBlue === 0) || (matchRed === 4 && matchBlue === 1)) return { level: '4th Prize', prize: '¥200' };
+      if ((matchRed === 4 && matchBlue === 0) || (matchRed === 3 && matchBlue === 1)) return { level: '5th Prize', prize: '¥10' };
+      if (matchBlue === 1) return { level: '6th Prize', prize: '¥5' };
+      return null;
+    }
+
+    function checkLottery() {
+      const redInputs = document.querySelectorAll('#red-inputs input');
+      const blueInput = document.getElementById('blue-input');
+
+      const reds = Array.from(redInputs).map(inp => parseInt(inp.value) || 0).filter(n => n > 0);
+      const blue = parseInt(blueInput.value) || 0;
+
+      if (reds.length !== 6 || reds.some(n => n < 1 || n > 33) || blue < 1 || blue > 16) {
+        document.getElementById('my-result').innerHTML = `<div style="color:#f44336;">Please enter valid draw numbers!</div>`;
+        return;
+      }
+
+      const uniqueReds = [...new Set(reds)].sort((a, b) => a - b);
+      if (uniqueReds.length !== 6) {
+        document.getElementById('my-result').innerHTML = `<div style="color:#f44336;">Red balls must be unique!</div>`;
+        return;
+      }
+
+      let results = [];
+      for (let i = 0; i < myTickets.length; i++) {
+        const prize = checkPrize(uniqueReds, blue, myTickets[i]);
+        if (prize) {
+          results.push(`#${i+1}: ${prize.level} (${prize.prize})`);
+        }
+      }
+
+      const resultEl = document.getElementById('my-result');
+      if (results.length > 0) {
+        resultEl.innerHTML = `<div style="color: #4caf50;">🎉 Congratulations!</div>` + results.map(r => `<div>${r}</div>`).join('');
+      } else {
+        resultEl.innerHTML = `<div style="color: #888;">No win this time. Keep going!</div>`;
+      }
+    }
+
+    const redInputsContainer = document.getElementById('red-inputs');
+    const inputs = [];
+    for (let i = 0; i < 6; i++) {
+      const inp = document.createElement('input');
+      inp.type = 'number';
+      inp.min = 1;
+      inp.max = 33;
+      inp.placeholder = '';
+      inp.dataset.index = i;
+      redInputsContainer.appendChild(inp);
+      inputs.push(inp);
+
+      inp.addEventListener('input', function(e) {
+        let val = e.target.value.trim();
+        if (val === '') return;
+        val = val.replace(/\D/g, '');
+        if (val.length > 2) val = val.slice(0, 2);
+        e.target.value = val;
+
+        const num = parseInt(val);
+        if (num >= 1 && num <= 33) {
+          if (val.length === 2 || (val.length === 1 && num >= 1)) {
+            const nextIndex = parseInt(e.target.dataset.index) + 1;
+            if (nextIndex < 6) {
+              inputs[nextIndex].focus();
+            } else {
+              document.getElementById('blue-input').focus();
+            }
+          }
+        }
+      });
+
+      inp.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const idx = parseInt(e.target.dataset.index);
+          if (idx < 5) {
+            inputs[idx + 1].focus();
+          } else {
+            document.getElementById('blue-input').focus();
+          }
+        }
+      });
+    }
+
+    document.getElementById('blue-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        checkLottery();
+      }
+    });
+  </script>
+
+  <!-- 💬 Qwen AI Integration with Fallback -->
+  <script>
+    let client = null;
+    const APP_ID = '08445960828c44b6af4ce2fd48c818f0';
+
+    function appendMessage(role, content) {
+      const chatContainer = document.getElementById('chat-container');
+      const el = document.createElement('div');
+      el.className = `ai-message ai-${role}-msg`;
+      const prefix = role === 'user' ? (window.currentLang === 'zh' ? '我：' : 'Me:') : (window.currentLang === 'zh' ? '通义千问：' : 'Qwen:');
+      el.innerHTML = `<strong>${prefix}</strong> ${content}`;
+      chatContainer.appendChild(el);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function mockResponse(userMsg) {
+      if (window.currentLang === 'zh') {
+        const replies = [
+          "我是 JDES（绝地而生）的助手。正式版将通过 DashScope 连接通义千问。",
+          "当前为演示模式。真实 AI 需要正确配置 SDK 和域名白名单。",
+          "JDES 意为“绝地而生”，是一个关于数字极简、独立开发与深度思考的个人博客。",
+          "你可以试试问：“JDES 是什么意思？” 或 “彩票面板怎么用？”",
+          "由于未授权域名，DashScope SDK 当前无法启用，正在使用模拟回复。"
+        ];
+        return replies[Math.floor(Math.random() * replies.length)];
+      } else {
+        const replies = [
+          "I'm JDES's assistant. In production, I'd connect to Qwen via DashScope.",
+          "This is a demo mode. Real AI requires proper SDK setup and domain whitelist.",
+          "JDES stands for 'Jue Di Er Sheng' (Rising from Adversity), a personal blog about digital minimalism, indie dev, and deep thinking.",
+          "Try asking: 'What is the motto of JDES?' or 'Tell me about the lottery panel.'",
+          "DashScope Web SDK may be blocked due to missing domain authorization."
+        ];
+        return replies[Math.floor(Math.random() * replies.length)];
+      }
+    }
+
+    async function askQwen() {
+      const inputEl = document.getElementById('user-input');
+      const userMessage = inputEl.value.trim();
+      if (!userMessage) return;
+
+      appendMessage('user', userMessage);
+      inputEl.value = '';
+      inputEl.disabled = true;
+      document.getElementById('ai-send-btn').disabled = true;
+
+      appendMessage('assistant', window.currentLang === 'zh' ? '思考中...' : 'Thinking...');
+
+      try {
+        if (typeof dashscope !== 'undefined' && client) {
+          const response = await client.chatCompletion({
+            model: 'qwen-max',
+            messages: [
+              { 
+                role: 'system', 
+                content: window.currentLang === 'zh' 
+                  ? '你是 JDES（绝地而生）博客的助手，请用简洁、专业、友好的中文回答问题。' 
+                  : 'You are JDES, a personal blog assistant. Respond concisely, helpfully, and professionally in English.'
+              },
+              { role: 'user', content: userMessage }
+            ]
+          });
+          const container = document.getElementById('chat-container');
+          if (container.lastChild?.textContent?.includes(window.currentLang === 'zh' ? '思考中...' : 'Thinking...')) {
+            container.removeChild(container.lastChild);
+          }
+          appendMessage('assistant', response.output.text);
+        } else {
+          await new Promise(r => setTimeout(r, 800));
+          const container = document.getElementById('chat-container');
+          if (container.lastChild?.textContent?.includes(window.currentLang === 'zh' ? '思考中...' : 'Thinking...')) {
+            container.removeChild(container.lastChild);
+          }
+          appendMessage('assistant', mockResponse(userMessage));
+        }
+      } catch (error) {
+        console.error('AI Error:', error);
+        const container = document.getElementById('chat-container');
+        if (container.lastChild?.textContent?.includes(window.currentLang === 'zh' ? '思考中...' : 'Thinking...')) {
+          container.removeChild(container.lastChild);
+        }
+        appendMessage('assistant', `⚠️ ${error.message || (window.currentLang === 'zh' ? 'AI 不可用，正在使用演示模式。' : 'AI unavailable. Using demo mode.')}`);
+      } finally {
+        inputEl.disabled = false;
+        document.getElementById('ai-send-btn').disabled = false;
+        inputEl.focus();
+      }
+    }
+
+    if (typeof dashscope !== 'undefined') {
+      try {
+        client = new dashscope.WebClient({ appId: APP_ID });
+        console.log('✅ DashScope SDK loaded and client initialized.');
+      } catch (e) {
+        console.error('❌ Failed to initialize DashScope client:', e);
+      }
+    } else {
+      console.warn('⚠️ DashScope Web SDK not loaded. Using simulated AI responses.');
+    }
+
+    document.getElementById('user-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        askQwen();
+      }
+    });
+  </script>
+
+  <!-- ✅ Language Toggle + Dynamic Post Loader -->
+  <script>
+    // Load saved language
+    window.currentLang = localStorage.getItem('jdes-lang') || 'en';
+
+    const translations = {
+      en: {
+        motto: "Even in the face of gales, never give up",
+        heroTitle: "JDES",
+        heroDesc: "Record thoughts · Share creations · Explore the edge of the digital world",
+        aboutTitle: "About JDES",
+        aboutDesc: "Hi, I'm DL, a digital nomad, indie developer, and lifelong learner.<br>I believe technology should serve humanity, and writing is an extension of thought.<br>This is where I share insights, projects, and inspiration.",
+        contactTitle: "Get in Touch",
+        contactDesc: "Feel free to reach out via email or social media:",
+        aiTitle: "Ask Qwen",
+        aiPlaceholder: "Ask something (e.g., What is JDES?)",
+        langToggle: "ZH",
+        noPosts: "No posts yet."
+      },
+      zh: {
+        motto: "纵使疾风起，人生不言弃",
+        heroTitle: "JDES（绝地而生）",
+        heroDesc: "记录思想 · 分享创造 · 探索数字世界的边界",
+        aboutTitle: "关于 JDES（绝地而生）",
+        aboutDesc: "你好，我是 DL，一名数字游民、独立开发者与终身学习者。<br>我相信技术应服务于人，而写作是思想的延伸。<br>这里是我分享洞见、项目与灵感的地方。",
+        contactTitle: "联系我",
+        contactDesc: "欢迎通过邮箱或社交媒体联系我：",
+        aiTitle: "向通义千问提问",
+        aiPlaceholder: "输入问题（例如：JDES 是什么意思？）",
+        langToggle: "EN",
+        noPosts: "暂无文章"
+      }
+    };
+
+    function applyLanguage(lang) {
+      const t = translations[lang];
+      document.querySelector('.motto-text').textContent = t.motto;
+      document.querySelector('.hero h1').innerHTML = t.heroTitle;
+      document.querySelector('.hero p').textContent = t.heroDesc;
+
+      document.querySelector('#about h2').textContent = t.aboutTitle;
+      document.querySelector('#about p').innerHTML = t.aboutDesc;
+      document.querySelector('#contact h2').textContent = t.contactTitle;
+      document.querySelector('#contact p:first-of-type').textContent = t.contactDesc;
+      document.querySelector('#ai-assistant h2').textContent = t.aiTitle;
+      document.getElementById('user-input').placeholder = t.aiPlaceholder;
+      document.getElementById('lang-toggle').textContent = t.langToggle;
+
+      document.querySelector('.logo-text').setAttribute('aria-label', lang === 'zh' ? 'JDES（绝地而生）首页' : 'JDES Home');
+
+      localStorage.setItem('jdes-lang', lang);
+      window.currentLang = lang;
+
+      // 重新加载文章
+      loadAndRenderPosts();
+    }
+
+    function toggleLanguage() {
+      const newLang = window.currentLang === 'en' ? 'zh' : 'en';
+      applyLanguage(newLang);
+    }
+
+    // ===== 动态加载文章 =====
+    const GITHUB_REPO = 'your-username/jdes-blog'; // 👈【重要】替换成你的 GitHub 仓库，如：dlcoder/jdes-blog
+    const GITHUB_BRANCH = 'main';
+
+    async function fetchMarkdownFiles() {
+      try {
+        const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/content/posts?ref=${GITHUB_BRANCH}`);
+        const files = await res.json();
+        if (!Array.isArray(files)) throw new Error('Failed to list posts');
+        
+        const lang = window.currentLang;
+        const suffix = `.${lang}.md`;
+        const markdownFiles = files.filter(f => f.name.endsWith(suffix));
+
+        const posts = [];
+        for (const file of markdownFiles) {
+          const rawUrl = file.download_url;
+          const mdRes = await fetch(rawUrl);
+          const content = await mdRes.text();
+          
+          // 简易 frontmatter 解析
+          const fmMatch = content.match(/^---\s*([\s\S]*?)\s*---/);
+          let frontmatter = {};
+          if (fmMatch) {
+            const fmText = fmMatch[1];
+            fmText.split('\n').forEach(line => {
+              const colonIndex = line.indexOf(':');
+              if (colonIndex > 0) {
+                const key = line.substring(0, colonIndex).trim();
+                const value = line.substring(colonIndex + 1).trim().replace(/^['"]|['"]$/g, '');
+                frontmatter[key] = value;
+              }
+            });
+          }
+
+          const date = frontmatter.date ? new Date(frontmatter.date) : new Date();
+          const formattedDate = date.toLocaleDateString(
+            lang === 'zh' ? 'zh-CN' : 'en-US',
+            { year: 'numeric', month: 'short', day: 'numeric' }
+          );
+
+          posts.push({
+            title: frontmatter.title || 'Untitled',
+            excerpt: frontmatter.excerpt || '',
+            date: formattedDate,
+            category: frontmatter.category || (lang === 'zh' ? '文章' : 'Post')
+          });
+        }
+
+        return posts.sort((a, b) => new Date(b.date) - new Date(a.date));
+      } catch (e) {
+        console.error('Load posts error:', e);
+        return [];
+      }
+    }
+
+    function renderPosts(posts) {
+      const container = document.getElementById('posts');
+      if (posts.length === 0) {
+        container.innerHTML = `<p style="text-align:center;color:#777;">${translations[window.currentLang].noPosts}</p>`;
+        return;
+      }
+      container.innerHTML = posts.map(post => `
+        <article class="post-card">
+          <h2>${post.title}</h2>
+          <p>${post.excerpt}</p>
+          <div class="post-meta">${post.date} · ${post.category}</div>
+        </article>
+      `).join('');
+    }
+
+    async function loadAndRenderPosts() {
+      document.getElementById('posts-loading').textContent = 'Loading...';
+      const posts = await fetchMarkdownFiles();
+      renderPosts(posts);
+    }
+
+    // 初始化
+    applyLanguage(window.currentLang);
+  </script>
+
+</body>
+</html>
