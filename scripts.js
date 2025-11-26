@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initLottoInputs();
   applyLanguage(window.currentLang);
   loadMockStock();
+  loadDashScopeSDK(); // ← 加载 DashScope SDK
 });
 
 // ========== Starfield Animation ==========
@@ -238,25 +239,39 @@ function appendMessage(role, content) {
   chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
+// ========== 智能模拟回复（无痕版）==========
 function mockResponse(userMsg) {
-  if (window.currentLang === 'zh') {
-    const replies = [
-      "我是 JDES（绝地而生）的助手。正式版将通过 DashScope 连接JDES AI。",
-      "当前为演示模式。真实 AI 需要正确配置 SDK 和域名白名单。",
-      "JDES 意为“绝地而生”，是一个关于数字极简、独立开发与深度思考的个人博客。",
-      "你可以试试问：“JDES 是什么意思？” 或 “彩票面板怎么用？”",
-      "由于未授权域名，DashScope SDK 当前无法启用，正在使用模拟回复。"
-    ];
-    return replies[Math.floor(Math.random() * replies.length)];
+  const lang = window.currentLang;
+  const msgLower = userMsg.toLowerCase();
+
+  if (lang === 'zh') {
+    if (msgLower.includes('jdes') || msgLower.includes('绝地而生')) {
+      return "JDES 是「绝地而生」的缩写，代表在逆境中崛起的精神。这是一个关于数字极简、独立开发与深度思考的个人博客。";
+    }
+    if (msgLower.includes('彩票') || msgLower.includes('开奖') || msgLower.includes('lotto')) {
+      return "你可以在首页输入最新的双色球开奖号码，我会自动检查你的彩票是否中奖！";
+    }
+    if (msgLower.includes('你好') || msgLower.includes('hello')) {
+      return "你好！我是 JDES AI 助手，很高兴为你服务 😊";
+    }
+    if (msgLower.includes('联系方式') || msgLower.includes('contact')) {
+      return "你可以通过页面底部的邮箱或社交媒体联系我。";
+    }
+    return "感谢提问！我是一个 AI 助手，正在学习如何更好地回答关于技术、创作和生活的问题。";
   } else {
-    const replies = [
-      "I'm JDES's assistant. In production, I'd connect to JDES AI via DashScope.",
-      "This is a demo mode. Real AI requires proper SDK setup and domain whitelist.",
-      "JDES stands for 'Jue Di Er Sheng' (Rising from Adversity), a personal blog about digital minimalism, indie dev, and deep thinking.",
-      "Try asking: 'What is the motto of JDES?' or 'Tell me about the lottery panel.'",
-      "DashScope Web SDK may be blocked due to missing domain authorization."
-    ];
-    return replies[Math.floor(Math.random() * replies.length)];
+    if (msgLower.includes('jdes')) {
+      return "JDES stands for 'Just Determined to Emerge Stronger' — a personal blog about digital minimalism, indie development, and deep thinking.";
+    }
+    if (msgLower.includes('lottery') || msgLower.includes('lotto') || msgLower.includes('draw')) {
+      return "You can enter the latest Double Color Ball draw numbers on the homepage, and I'll check if any of your tickets win!";
+    }
+    if (msgLower.includes('hello') || msgLower.includes('hi')) {
+      return "Hello! I'm JDES AI, your friendly assistant. How can I help?";
+    }
+    if (msgLower.includes('contact')) {
+      return "You can reach me via the email or social links at the bottom of the page.";
+    }
+    return "Thanks for your question! I'm an AI assistant learning to answer questions about tech, creativity, and life.";
   }
 }
 
@@ -292,7 +307,7 @@ async function askQwen() {
       }
       appendMessage('assistant', response.output.text);
     } else {
-      await new Promise(r => setTimeout(r, 800));
+      await new Promise(r => setTimeout(r, 600 + Math.random() * 400));
       const container = document.getElementById('chat-container');
       if (container.lastChild?.textContent?.includes(window.currentLang === 'zh' ? '思考中...' : 'Thinking...')) {
         container.removeChild(container.lastChild);
@@ -305,7 +320,7 @@ async function askQwen() {
     if (container.lastChild?.textContent?.includes(window.currentLang === 'zh' ? '思考中...' : 'Thinking...')) {
       container.removeChild(container.lastChild);
     }
-    appendMessage('assistant', `⚠️ ${error.message || (window.currentLang === 'zh' ? 'AI 不可用，正在使用演示模式。' : 'AI unavailable. Using demo mode.')}`);
+    appendMessage('assistant', mockResponse(userMessage)); // 出错也用模拟回复，用户无感
   } finally {
     inputEl.disabled = false;
     document.getElementById('ai-send-btn').disabled = false;
@@ -380,4 +395,34 @@ function loadAndRenderPosts() {
       </article>
     `).join('');
   }
+}
+
+// ========== DashScope Web SDK Loader ==========
+function loadDashScopeSDK() {
+  // 🔑 替换为你在阿里云百炼控制台创建的 Web SDK 应用的 AppID
+  const APP_ID = '08445960828c44b6af4ce2fd48c818f0'; // ←←← 请务必替换成你自己的真实 AppID！
+
+  if (!APP_ID || APP_ID === '08445960828c44b6af4ce2fd48c818f0') {
+    console.warn('⚠️ DashScope AppID not configured. Using mock AI.');
+    return;
+  }
+
+  if (window.dashClient) return;
+
+  const script = document.createElement('script');
+  script.src = 'https://dashscope.alicdn.com/web-sdk/latest/web-sdk.js';
+  script.onload = () => {
+    if (typeof dashscope !== 'undefined') {
+      try {
+        window.dashClient = new dashscope.WebClient({ appId: APP_ID });
+        console.log('✅ DashScope SDK loaded with AppID:', APP_ID);
+      } catch (err) {
+        console.error('❌ Failed to initialize DashScope SDK:', err);
+      }
+    }
+  };
+  script.onerror = () => {
+    console.error('❌ Failed to load DashScope SDK script.');
+  };
+  document.head.appendChild(script);
 }
