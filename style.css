@@ -1,0 +1,300 @@
+:root {
+  --bg: #121212;
+  --fg: #f0f0f0;
+  --accent: #f57c00;
+  --card-bg: #1e1e1e;
+  --border: #333;
+}
+
+* { 
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box; 
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.7;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Starfield background */
+#starfield {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.motto-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 14px;
+  color: #555;
+  z-index: 10;
+}
+
+.motto-text {
+  letter-spacing: 4px;
+  text-align: center;
+  padding: 10px 0;
+  border-right: 1px solid var(--border);
+  transition: color 0.3s;
+}
+
+.motto-text:hover {
+  color: var(--accent);
+}
+
+.stock-sidebar {
+  position: fixed;
+  right: 0;
+  top: 0;
+  height: 100vh;
+  width: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 20px;
+  z-index: 10;
+}
+
+.stock-container {
+  width: 260px;
+  transform: rotate(90deg) translateX(-110px);
+  transform-origin: top left;
+}
+
+.stock-title {
+  font-size: 12px;
+  color: #777;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+#stock-display {
+  background: var(--card-bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  padding: 0 10px;
+}
+
+.main-wrapper {
+  margin-left: 40px;
+  margin-right: 40px;
+  padding-top: 20px;
+}
+
+header {
+  padding: 2rem 5%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo-text {
+  font-family: 'Orbitron', 'Arial Black', 'Microsoft YaHei', sans-serif;
+  font-weight: 700;
+  font-size: 2.2rem;
+  text-decoration: none;
+  /* 关键修复：不再使用 transparent + background-clip，直接用 solid 橙色 */
+  color: var(--accent);
+  letter-spacing: 2px;
+  display: block;
+  height: 48px;
+  line-height: 48px;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+nav a, #lang-toggle {
+  color: var(--fg);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+  cursor: pointer;
+}
+
+nav a:hover, #lang-toggle:hover {
+  color: var(--accent);
+}
+
+main {
+  max-width: 720px;
+  margin: 3rem auto;
+  padding: 0 5%;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.hero h1 {
+  font-family: 'Orbitron', 'Arial Black', 'Microsoft YaHei', sans-serif;
+  font-size: 2.8rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  /* 关键修复：直接使用 solid 橙色，确保文字可见 */
+  color: var(--accent);
+}
+
+.hero p {
+  font-size: 1.1rem;
+  color: #aaa;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.posts {
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
+}
+
+.post-card {
+  background: var(--card-bg);
+  padding: 1.8rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  transition: transform 0.3s, border-color 0.3s;
+}
+
+.post-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+}
+
+footer {
+  text-align: center;
+  padding: 2rem 5%;
+  color: #777;
+  font-size: 0.9rem;
+  border-top: 1px solid var(--border);
+  margin-top: 4rem;
+}
+
+.counter {
+  margin-top: 0.5rem;
+  color: #888;
+  font-size: 0.85rem;
+}
+
+/* 💬 Qwen AI Assistant */
+#ai-assistant {
+  margin-top: 3rem;
+}
+#chat-container {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  height: 200px;
+  overflow-y: auto;
+  font-size: 0.95rem;
+}
+#user-input {
+  flex: 1;
+  padding: 10px;
+  background: #2a2a2a;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  border-radius: 6px;
+}
+#ai-send-btn {
+  padding: 10px 16px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+#ai-send-btn:hover {
+  background: #ff9800;
+}
+.ai-message {
+  padding: 8px 0;
+  border-bottom: 1px solid #333;
+}
+.ai-message:last-child {
+  border-bottom: none;
+}
+.ai-user-msg strong { color: #aaa; }
+.ai-assistant-msg strong { color: var(--accent); }
+
+/* Lotto Panel */
+#lottery-panel {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  width: 280px;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.input-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+input[type="number"] {
+  width: 36px;
+  height: 36px;
+  text-align: center;
+  font-size: 16px;
+  border: 1px solid #555;
+  border-radius: 6px;
+  background: #2a2a2a;
+  color: white;
+  padding: 0;
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+#lottery-panel button {
+  width: 100%;
+  padding: 8px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 15px;
+}
