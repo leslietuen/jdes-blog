@@ -5,16 +5,314 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>JDES</title>
 
-  <!-- Favicon -->
+  <!-- Favicon as inline SVG -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 36'%3E%3Cpath d='M10 30 Q30 15, 50 30 T90 30 T130 30 T150 30' stroke='%23f57c00' stroke-width='1.2' fill='none' opacity='0.6'/%3E%3Ctext x='80' y='26' font-family='Orbitron, sans-serif' font-weight='700' font-size='60' fill='%23f57c00' text-anchor='middle' letter-spacing='2'%3EJDES%3C/text%3E%3C/svg%3E">
 
-  <!-- Orbitron 字体（支持大写） -->
+  <!-- Preload & Load Orbitron Font -->
   <link rel="preload" href="https://fonts.gstatic.com/s/orbitron/v31/yMJMMIlzdpvBhQQL_SC3X9yhF25-T1ny_CmBoWgz.woff2" as="font" type="font/woff2" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <noscript><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet"></noscript>
 
-  <!-- 外部 CSS（请确保 style.css 存在） -->
-  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --bg: #121212;
+      --fg: #f0f0f0;
+      --accent: #f57c00;
+      --card-bg: #1e1e1e;
+      --border: #333;
+    }
+
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.7;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Starfield background */
+    #starfield {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .motto-sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100vh;
+      width: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      font-size: 14px;
+      color: #555;
+      z-index: 10;
+    }
+
+    .motto-text {
+      letter-spacing: 4px;
+      text-align: center;
+      padding: 10px 0;
+      border-right: 1px solid var(--border);
+      transition: color 0.3s;
+    }
+
+    .motto-text:hover {
+      color: var(--accent);
+    }
+
+    .stock-sidebar {
+      position: fixed;
+      right: 0;
+      top: 0;
+      height: 100vh;
+      width: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 20px;
+      z-index: 10;
+    }
+
+    .stock-container {
+      width: 260px;
+      transform: rotate(90deg) translateX(-110px);
+      transform-origin: top left;
+    }
+
+    .stock-title {
+      font-size: 12px;
+      color: #777;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    #stock-display {
+      background: var(--card-bg);
+      color: var(--fg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      padding: 0 10px;
+    }
+
+    .main-wrapper {
+      margin-left: 40px;
+      margin-right: 40px;
+      padding-top: 20px;
+    }
+
+    header {
+      padding: 2rem 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo-text {
+      font-family: 'Orbitron', 'Arial Black', 'Microsoft YaHei', sans-serif;
+      font-weight: 700;
+      font-size: 2.2rem;
+      text-decoration: none;
+      color: var(--accent);
+      letter-spacing: 2px;
+      display: block;
+      height: 48px;
+      line-height: 48px;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    nav a, #lang-toggle {
+      color: var(--fg);
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+
+    nav a:hover, #lang-toggle:hover {
+      color: var(--accent);
+    }
+
+    main {
+      max-width: 720px;
+      margin: 3rem auto;
+      padding: 0 5%;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .hero h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--accent);
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: #aaa;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .posts {
+      display: flex;
+      flex-direction: column;
+      gap: 1.8rem;
+    }
+
+    .post-card {
+      background: var(--card-bg);
+      padding: 1.8rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      transition: transform 0.3s, border-color 0.3s;
+    }
+
+    .post-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-3px);
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem 5%;
+      color: #777;
+      font-size: 0.9rem;
+      border-top: 1px solid var(--border);
+      margin-top: 4rem;
+    }
+
+    .counter {
+      margin-top: 0.5rem;
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    /* 💬 Qwen AI Assistant */
+    #ai-assistant {
+      margin-top: 3rem;
+    }
+    #chat-container {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      height: 200px;
+      overflow-y: auto;
+      font-size: 0.95rem;
+    }
+    #user-input {
+      flex: 1;
+      padding: 10px;
+      background: #2a2a2a;
+      border: 1px solid var(--border);
+      color: var(--fg);
+      border-radius: 6px;
+    }
+    #ai-send-btn {
+      padding: 10px 16px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #ai-send-btn:hover {
+      background: #ff9800;
+    }
+    .ai-message {
+      padding: 8px 0;
+      border-bottom: 1px solid #333;
+    }
+    .ai-message:last-child {
+      border-bottom: none;
+    }
+    .ai-user-msg strong { color: #aaa; }
+    .ai-assistant-msg strong { color: var(--accent); }
+
+    /* Lotto Panel */
+    #lottery-panel {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      width: 280px;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .input-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    input[type="number"] {
+      width: 36px;
+      height: 36px;
+      text-align: center;
+      font-size: 16px;
+      border: 1px solid #555;
+      border-radius: 6px;
+      background: #2a2a2a;
+      color: white;
+      padding: 0;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    #lottery-panel button {
+      width: 100%;
+      padding: 8px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 15px;
+    }
+  </style>
 </head>
 <body>
 
@@ -33,7 +331,7 @@
 
   <div class="main-wrapper">
     <header>
-      <a href="https://WWW.AI.COM" class="logo-text" aria-label="JDES Home">JDES</a>
+      <a href="https://www.zhcw.com/kjxx/ssq/" class="logo-text" aria-label="JDES Home">JDES</a>
       <nav>
         <a href="#posts">Posts</a>
         <a href="#about">About</a>
@@ -102,30 +400,430 @@
     <div id="my-result">Enter draw numbers and click Check</div>
   </div>
 
-  <!-- 延迟加载第三方脚本 -->
   <script>
-    // 延迟加载 DashScope SDK 和 不蒜子
-    window.addEventListener('load', () => {
-      // DashScope SDK
-      const dashScript = document.createElement('script');
-      dashScript.src = 'https://dashscope.alicdn.com/web-sdk/latest/web-sdk.js';
-      dashScript.onload = () => {
-        if (typeof dashscope !== 'undefined') {
-          window.dashClient = new dashscope.WebClient({ appId: '08445960828c44b6af4ce2fd48c818f0' });
-          console.log('✅ DashScope SDK loaded.');
-        }
-      };
-      document.head.appendChild(dashScript);
+    // ========== 全局变量 ==========
+    window.currentLang = localStorage.getItem('jdes-lang') || 'en';
 
-      // 不蒜子统计
+    const myTickets = [
+      [4, 10, 17, 19, 25, 31, 6],
+      [1, 2, 3, 4, 5, 6, 7],
+      [1, 6, 8, 9, 11, 24, 8],
+      [4, 5, 6, 11, 14, 15, 9],
+      [3, 8, 9, 12, 14, 15, 16]
+    ];
+
+    const translations = {
+      en: {
+        motto: "Even in the face of gales, never give up",
+        heroTitle: "JDES",
+        heroDesc: "Record thoughts · Share creations · Explore the edge of the digital world",
+        aboutTitle: "About JDES",
+        aboutDesc: "Hi, I'm JDES a digital nomad, indie developer, and lifelong learner.<br>I believe technology should serve humanity, and writing is an extension of thought.<br>This is where I share insights, projects, and inspiration.",
+        contactTitle: "Get in Touch",
+        contactDesc: "Feel free to reach out via email or social media:",
+        aiTitle: "Ask JDES AI",
+        aiPlaceholder: "Ask something (e.g., What is JDES?)",
+        langToggle: "ZH",
+        noPosts: "No posts yet.",
+        icpText: 'Beijing ICP Filing No. <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" style="color:#999;">12345678-1</a>',
+        counterText: 'Running for <span id="busuanzi_value_site_uv"></span> days, visited <span id="busuanzi_value_site_pv"></span> times'
+      },
+      zh: {
+        motto: "纵使疾风起，人生不言弃",
+        heroTitle: "JDES-绝地而生",
+        heroDesc: "记录思想 · 分享创造 · 探索数字世界的边界",
+        aboutTitle: "关于 JDES-绝地而生",
+        aboutDesc: "你好，我是 JDES，一名数字游民、独立开发者与终身学习者。<br>我相信技术应服务于人，而写作是思想的延伸。<br>这里是我分享洞见、项目与灵感的地方。",
+        contactTitle: "联系我",
+        contactDesc: "欢迎通过邮箱或社交媒体联系我：",
+        aiTitle: "向JDES AI提问",
+        aiPlaceholder: "输入问题（例如：JDES 是什么意思？）",
+        langToggle: "EN",
+        noPosts: "暂无文章",
+        icpText: '京ICP备 <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" style="color:#999;">12345678-1</a> 号',
+        counterText: '已运行 <span id="busuanzi_value_site_uv"></span> 天，访问 <span id="busuanzi_value_site_pv"></span> 次'
+      }
+    };
+
+    // ========== 初始化 ==========
+    document.addEventListener('DOMContentLoaded', () => {
+      initStarfield();
+      initLottoInputs();
+      applyLanguage(window.currentLang);
+      loadMockStock();
+      loadDashScopeSDK();
+      // Load Busuanzi after DOM ready
       const busuanzi = document.createElement('script');
       busuanzi.async = true;
       busuanzi.src = '//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';
       document.body.appendChild(busuanzi);
     });
-  </script>
 
-  <!-- 主逻辑脚本 -->
-  <script src="scripts.js"></script>
+    // ========== Starfield Animation ==========
+    function initStarfield() {
+      const canvas = document.getElementById('starfield');
+      const ctx = canvas.getContext('2d');
+
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      const isMobile = window.innerWidth <= 768;
+      const starCount = isMobile ? 80 : 300;
+
+      class Star {
+        constructor() {
+          this.reset();
+          this.depth = Math.random();
+        }
+        reset() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.vx = (Math.random() - 0.5) * 0.2;
+          this.vy = Math.random() * 0.15 + 0.02;
+        }
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          if (this.y > canvas.height + 10) this.y = -10;
+          if (this.x > canvas.width + 10) this.x = -10;
+          if (this.x < -10) this.x = canvas.width + 10;
+        }
+        draw(time) {
+          const size = 0.3 + this.depth * 1.4;
+          const baseOpacity = 0.2 + this.depth * 0.8;
+          const twinkle = Math.sin(time * (0.8 + this.depth * 1.5)) * 0.25;
+          const opacity = Math.max(0, Math.min(1, baseOpacity + twinkle));
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+          ctx.fill();
+        }
+      }
+
+      const stars = Array.from({ length: starCount }, () => new Star());
+      let time = 0;
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        time += 0.016;
+        stars.forEach(star => {
+          star.update();
+          star.draw(time);
+        });
+        requestAnimationFrame(animate);
+      }
+      animate();
+    }
+
+    // ========== Mock Stock ==========
+    function loadMockStock() {
+      setTimeout(() => {
+        document.getElementById('stock-display').innerHTML = `
+          <div style="text-align: center;">
+            <div style="font-weight: 600; color: #f57c00;">12.45</div>
+            <div style="font-size: 12px; color: #aaa;">↑0.32 (2.64%)</div>
+          </div>
+        `;
+      }, 300);
+    }
+
+    // ========== Lotto Logic ==========
+    function initLottoInputs() {
+  const redInputsContainer = document.getElementById('red-inputs');
+  const inputs = [];
+  for (let i = 0; i < 6; i++) {
+    const inp = document.createElement('input');
+    inp.type = 'number';
+    inp.min = 1;
+    inp.max = 33;
+    inp.placeholder = '';
+    inp.dataset.index = i;
+    inp.inputMode = 'numeric'; // 更好的移动端数字键盘支持
+    inp.pattern = '[0-9]*';   // iOS 强制数字键盘
+    redInputsContainer.appendChild(inp);
+    inputs.push(inp);
+
+    // 只清理非数字字符（可选）
+    inp.addEventListener('input', function(e) {
+      let val = e.target.value.replace(/\D/g, '');
+      if (val.length > 2) val = val.slice(0, 2);
+      e.target.value = val;
+    });
+
+    // 👇 关键：仅当按下 Enter 时才跳转
+    inp.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const idx = parseInt(e.target.dataset.index);
+        if (idx < 5) {
+          inputs[idx + 1].focus();
+        } else {
+          // 红球输完后聚焦蓝球
+          document.getElementById('blue-input').focus();
+        }
+      }
+    });
+  }
+
+  // 蓝球回车直接执行检查
+  document.getElementById('blue-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      checkLottery();
+    }
+  });
+}
+
+    function checkPrize(drawnRed, drawnBlue, ticket) {
+      const redSet = new Set(drawnRed);
+      const ticketRed = ticket.slice(0, 6);
+      const ticketBlue = ticket[6];
+      const matchRed = ticketRed.filter(n => redSet.has(n)).length;
+      const matchBlue = ticketBlue === drawnBlue ? 1 : 0;
+
+      if (matchRed === 6 && matchBlue === 1) return { level: '1st Prize', prize: '≈¥5M+' };
+      if (matchRed === 6 && matchBlue === 0) return { level: '2nd Prize', prize: '≈¥200K+' };
+      if (matchRed === 5 && matchBlue === 1) return { level: '3rd Prize', prize: '¥3,000' };
+      if ((matchRed === 5 && matchBlue === 0) || (matchRed === 4 && matchBlue === 1)) return { level: '4th Prize', prize: '¥200' };
+      if ((matchRed === 4 && matchBlue === 0) || (matchRed === 3 && matchBlue === 1)) return { level: '5th Prize', prize: '¥10' };
+      if (matchBlue === 1) return { level: '6th Prize', prize: '¥5' };
+      return null;
+    }
+
+    function checkLottery() {
+      const redInputs = document.querySelectorAll('#red-inputs input');
+      const blueInput = document.getElementById('blue-input');
+
+      const reds = Array.from(redInputs).map(inp => parseInt(inp.value) || 0).filter(n => n > 0);
+      const blue = parseInt(blueInput.value) || 0;
+
+      if (reds.length !== 6 || reds.some(n => n < 1 || n > 33) || blue < 1 || blue > 16) {
+        document.getElementById('my-result').innerHTML = `<div style="color:#f44336;">Please enter valid draw numbers!</div>`;
+        return;
+      }
+
+      const uniqueReds = [...new Set(reds)].sort((a, b) => a - b);
+      if (uniqueReds.length !== 6) {
+        document.getElementById('my-result').innerHTML = `<div style="color:#f44336;">Red balls must be unique!</div>`;
+        return;
+      }
+
+      let results = [];
+      for (let i = 0; i < myTickets.length; i++) {
+        const prize = checkPrize(uniqueReds, blue, myTickets[i]);
+        if (prize) {
+          results.push(`#${i+1}: ${prize.level} (${prize.prize})`);
+        }
+      }
+
+      const resultEl = document.getElementById('my-result');
+      if (results.length > 0) {
+        resultEl.innerHTML = `<div style="color: #4caf50;">🎉 Congratulations!</div>` + results.map(r => `<div>${r}</div>`).join('');
+      } else {
+        resultEl.innerHTML = `<div style="color: #888;">No win this time. Keep going!</div>`;
+      }
+    }
+
+    // ========== AI Assistant ==========
+    function appendMessage(role, content) {
+      const chatContainer = document.getElementById('chat-container');
+      const el = document.createElement('div');
+      el.className = `ai-message ai-${role}-msg`;
+      const prefix = role === 'user' ? (window.currentLang === 'zh' ? '我：' : 'Me:') : (window.currentLang === 'zh' ? 'JDES AI：' : 'JDES AI:');
+      el.innerHTML = `<strong>${prefix}</strong> ${content}`;
+      chatContainer.appendChild(el);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function mockResponse(userMsg) {
+      const lang = window.currentLang;
+      const msgLower = userMsg.toLowerCase();
+
+      if (lang === 'zh') {
+        if (msgLower.includes('jdes') || msgLower.includes('绝地而生')) {
+          return "JDES 是「绝地而生」的缩写，代表在逆境中崛起的精神。这是一个关于数字极简、独立开发与深度思考的个人博客。";
+        }
+        if (msgLower.includes('彩票') || msgLower.includes('开奖') || msgLower.includes('lotto')) {
+          return "你可以在首页输入最新的双色球开奖号码，我会自动检查你的彩票是否中奖！";
+        }
+        if (msgLower.includes('你好') || msgLower.includes('hello')) {
+          return "你好！我是 JDES AI 助手，很高兴为你服务 😊";
+        }
+        if (msgLower.includes('联系方式') || msgLower.includes('contact')) {
+          return "你可以通过页面底部的邮箱或社交媒体联系我。";
+        }
+        return "感谢提问！我是一个 AI 助手，正在学习如何更好地回答关于技术、创作和生活的问题。";
+      } else {
+        if (msgLower.includes('jdes')) {
+          return "JDES stands for 'Just Determined to Emerge Stronger' — a personal blog about digital minimalism, indie development, and deep thinking.";
+        }
+        if (msgLower.includes('lottery') || msgLower.includes('lotto') || msgLower.includes('draw')) {
+          return "You can enter the latest Double Color Ball draw numbers on the homepage, and I'll check if any of your tickets win!";
+        }
+        if (msgLower.includes('hello') || msgLower.includes('hi')) {
+          return "Hello! I'm JDES AI, your friendly assistant. How can I help?";
+        }
+        if (msgLower.includes('contact')) {
+          return "You can reach me via the email or social links at the bottom of the page.";
+        }
+        return "Thanks for your question! I'm an AI assistant learning to answer questions about tech, creativity, and life.";
+      }
+    }
+
+    async function askQwen() {
+      const inputEl = document.getElementById('user-input');
+      const userMessage = inputEl.value.trim();
+      if (!userMessage) return;
+
+      appendMessage('user', userMessage);
+      inputEl.value = '';
+      inputEl.disabled = true;
+      document.getElementById('ai-send-btn').disabled = true;
+
+      appendMessage('assistant', window.currentLang === 'zh' ? '思考中...' : 'Thinking...');
+
+      try {
+        if (typeof window.dashClient !== 'undefined') {
+          const response = await window.dashClient.chatCompletion({
+            model: 'qwen-max',
+            messages: [
+              { 
+                role: 'system', 
+                content: window.currentLang === 'zh' 
+                  ? '你是 JDES（绝地而生）博客的助手，请用简洁、专业、友好的中文回答问题。' 
+                  : 'You are JDES, a personal blog assistant. Respond concisely, helpfully, and professionally in English.'
+              },
+              { role: 'user', content: userMessage }
+            ]
+          });
+          const container = document.getElementById('chat-container');
+          if (container.lastChild?.textContent?.includes(window.currentLang === 'zh' ? '思考中...' : 'Thinking...')) {
+            container.removeChild(container.lastChild);
+          }
+          appendMessage('assistant', response.output.text);
+        } else {
+          await new Promise(r => setTimeout(r, 600 + Math.random() * 400));
+          const container = document.getElementById('chat-container');
+          if (container.lastChild?.textContent?.includes(window.currentLang === 'zh' ? '思考中...' : 'Thinking...')) {
+            container.removeChild(container.lastChild);
+          }
+          appendMessage('assistant', mockResponse(userMessage));
+        }
+      } catch (error) {
+        console.error('AI Error:', error);
+        const container = document.getElementById('chat-container');
+        if (container.lastChild?.textContent?.includes(window.currentLang === 'zh' ? '思考中...' : 'Thinking...')) {
+          container.removeChild(container.lastChild);
+        }
+        appendMessage('assistant', mockResponse(userMessage));
+      } finally {
+        inputEl.disabled = false;
+        document.getElementById('ai-send-btn').disabled = false;
+        inputEl.focus();
+      }
+    }
+
+    document.getElementById('user-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        askQwen();
+      }
+    });
+
+    // ========== Language & Posts ==========
+    function applyLanguage(lang) {
+      const t = translations[lang];
+      document.querySelector('.motto-text').textContent = t.motto;
+      document.querySelector('.hero h1').innerHTML = t.heroTitle;
+      document.querySelector('.hero p').textContent = t.heroDesc;
+
+      document.querySelector('#about h2').textContent = t.aboutTitle;
+      document.querySelector('#about p').innerHTML = t.aboutDesc;
+      document.querySelector('#contact h2').textContent = t.contactTitle;
+      document.querySelector('#contact p:first-of-type').textContent = t.contactDesc;
+      document.querySelector('#ai-assistant h2').textContent = t.aiTitle;
+      document.getElementById('user-input').placeholder = t.aiPlaceholder;
+      document.getElementById('lang-toggle').textContent = t.langToggle;
+
+      document.getElementById('icp-text').innerHTML = t.icpText;
+      document.getElementById('counter-text').innerHTML = t.counterText;
+
+      document.querySelector('.logo-text').setAttribute('aria-label', lang === 'zh' ? 'JDES（绝地而生）首页' : 'JDES Home');
+
+      localStorage.setItem('jdes-lang', lang);
+      window.currentLang = lang;
+
+      loadAndRenderPosts();
+    }
+
+    function toggleLanguage() {
+      const newLang = window.currentLang === 'en' ? 'zh' : 'en';
+      applyLanguage(newLang);
+    }
+
+    function loadAndRenderPosts() {
+      const lang = window.currentLang;
+      const posts = lang === 'zh' ? [
+        {
+          title: "欢迎来到 JDES",
+          excerpt: "这是我的第一个中文测试文章，用于验证多语言功能是否正常。",
+          date: "2025年11月26日",
+          category: "公告"
+        }
+      ] : [
+        {
+          title: "Welcome to JDES",
+          excerpt: "This is a sample post to verify multilingual support.",
+          date: "Nov 26, 2025",
+          category: "Announcement"
+        }
+      ];
+
+      const container = document.getElementById('posts');
+      if (posts.length === 0) {
+        container.innerHTML = `<p style="text-align:center;color:#777;">${translations[lang].noPosts}</p>`;
+      } else {
+        container.innerHTML = posts.map(post => `
+          <article class="post-card">
+            <h2>${post.title}</h2>
+            <p>${post.excerpt}</p>
+            <div class="post-meta">${post.date} · ${post.category}</div>
+          </article>
+        `).join('');
+      }
+    }
+
+    // ========== DashScope Web SDK Loader ==========
+    function loadDashScopeSDK() {
+      const APP_ID = '08445960828c44b6af4ce2fd48c818f0'; // Replace with your real AppID
+
+      if (!APP_ID || APP_ID === '08445960828c44b6af4ce2fd48c818f0') {
+        console.warn('⚠️ DashScope AppID not configured. Using mock AI.');
+        return;
+      }
+
+      if (window.dashClient) return;
+
+      const script = document.createElement('script');
+      script.src = 'https://dashscope.alicdn.com/web-sdk/latest/web-sdk.js';
+      script.onload = () => {
+        if (typeof dashscope !== 'undefined') {
+          try {
+            window.dashClient = new dashscope.WebClient({ appId: APP_ID });
+            console.log('✅ DashScope SDK loaded with AppID:', APP_ID);
+          } catch (err) {
+            console.error('❌ Failed to initialize DashScope SDK:', err);
+          }
+        }
+      };
+      script.onerror = () => {
+        console.error('❌ Failed to load DashScope SDK script.');
+      };
+      document.head.appendChild(script);
+    }
+  </script>
 </body>
 </html>
